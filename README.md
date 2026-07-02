@@ -121,14 +121,13 @@ pip install -r requirements.txt
 Create a `.env` file and add your IBM Cloud credentials.
 
 ```env
-IBM_API_KEY=YOUR_API_KEY
-IBM_WATSONX_URL=YOUR_WATSONX_URL
-IBM_PROJECT_ID=YOUR_PROJECT_ID
-WATSONX_MODEL_ID=YOUR_MODEL_ID
-
-FLASK_SECRET_KEY=your_secret_key
+IBM_API_KEY=a1o8qyTMXSigb_CS3GYQrrNN7zhLiq1haBBld9pA2OSu
+IBM_WATSONX_URL=https://au-syd.ml.cloud.ibm.com
+IBM_PROJECT_ID=ea62e3a2-5220-48bf-bfbd-eca8b9ed3965
+WATSONX_MODEL_ID=meta-llama/llama-3-3-70b-instruct
+FLASK_SECRET_KEY=nutribot-secret-2025-xK9mP
 FLASK_ENV=development
-FLASK_DEBUG=True
+FLASK_DEBUG=False
 FLASK_PORT=5000
 ```
 
@@ -166,21 +165,14 @@ http://localhost:5000
 
 ### Chatbot Interface
 
-(Add Screenshot Here)
-
 ### IBM BOB Integration
-
-(Add Screenshot Here)
 
 ### API Connection
 
-(Add Screenshot Here)
 
 ---
 
 ## 🎥 Demo
-
-(Add your screen recording or YouTube video link here)
 
 ---
 
