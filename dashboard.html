@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — {{ agent_name }}{% endblock %}
+
+{% block content %}
+<div class="container-xl px-4" style="margin-top:90px;padding-bottom:60px">
+
+  <div class="page-header mb-4">
+    <h2 class="fw-bold mb-1"><i class="bi bi-grid-1x2 me-2 text-primary"></i>Nutrition Dashboard</h2>
+    <p class="text-muted mb-0">Your personal nutrition overview and quick tools.</p>
+  </div>
+
+  <!-- ── Stat Cards ────────────────────────────────────────────────────────── -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+      <div class="stat-card card border-0 h-100">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="stat-icon bg-primary-soft text-primary"><i class="bi bi-fire"></i></div>
+          <div>
+            <div class="stat-value" id="dashCalories">—</div>
+            <div class="stat-label">Daily Target (kcal)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+      <div class="stat-card card border-0 h-100">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="stat-icon bg-success-soft text-success"><i class="bi bi-award"></i></div>
+          <div>
+            <div class="stat-value" id="dashBMI">—</div>
+            <div class="stat-label">Your BMI</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+      <div class="stat-card card border-0 h-100">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="stat-icon bg-warning-soft text-warning"><i class="bi bi-egg-fried"></i></div>
+          <div>
+            <div class="stat-value" id="dashProtein">—</div>
+            <div class="stat-label">Protein Target (g)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+      <div class="stat-card card border-0 h-100">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="stat-icon bg-info-soft text-info"><i class="bi bi-droplet-half"></i></div>
+          <div>
+            <div class="stat-value" id="dashWater">2.5 L</div>
+            <div class="stat-label">Daily Water Goal</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Main content row ──────────────────────────────────────────────────── -->
+  <div class="row g-4">
+
+    <!-- Macro Chart -->
+    <div class="col-lg-5">
+      <div class="card border-0 h-100">
+        <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
+          <h6 class="fw-semibold mb-0"><i class="bi bi-pie-chart me-2 text-primary"></i>Macro Distribution</h6>
+        </div>
+        <div class="card-body d-flex flex-column align-items-center justify-content-center">
+          <canvas id="macroChart" width="240" height="240"></canvas>
+          <div class="macro-legend mt-3 d-flex gap-4 flex-wrap justify-content-center" id="macroLegend">
+            <div class="d-flex align-items-center gap-2">
+              <span class="legend-dot" style="background:#3b82d4"></span><small>Protein</small>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="legend-dot" style="background:#f59e0b"></span><small>Carbs</small>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="legend-dot" style="background:#ef4444"></span><small>Fat</small>
+            </div>
+          </div>
+          <p class="text-muted text-center mt-3 small" id="macroNote">
+            Set your profile on the <a href="/">Chat page</a> to personalise this chart.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Calorie Estimator -->
+    <div class="col-lg-7">
+      <div class="card border-0 h-100">
+        <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
+          <h6 class="fw-semibold mb-0"><i class="bi bi-search me-2 text-warning"></i>Quick Calorie Estimator</h6>
+        </div>
+        <div class="card-body px-4">
+          <div class="row g-2 mb-3">
+            <div class="col-md-5">
+              <input type="text" class="form-control" id="foodInput" placeholder="Food name (e.g. rice, paneer)">
+            </div>
+            <div class="col-md-4">
+              <div class="input-group">
+                <input type="number" class="form-control" id="qtyInput" value="100" min="1">
+                <span class="input-group-text">g</span>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-primary w-100" id="estimateBtn">
+                <i class="bi bi-calculator me-1"></i>Estimate
+              </button>
+            </div>
+          </div>
+          <div id="estimateResult" class="estimate-result d-none"></div>
+
+          <!-- Indian Foods Quick Reference -->
+          <h6 class="fw-semibold mt-4 mb-3 text-muted">Popular Indian Foods (per 100g)</h6>
+          <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+              <thead class="table-light">
+                <tr><th>Food</th><th>Cal</th><th>Protein</th><th>Carbs</th><th>Fat</th></tr>
+              </thead>
+              <tbody id="foodTable">
+                <tr><td>Chapati (wheat)</td><td>297</td><td>8g</td><td>55g</td><td>4g</td></tr>
+                <tr><td>Brown Rice (cooked)</td><td>111</td><td>3g</td><td>23g</td><td>1g</td></tr>
+                <tr><td>Dal (cooked)</td><td>116</td><td>8g</td><td>18g</td><td>2g</td></tr>
+                <tr><td>Paneer</td><td>265</td><td>18g</td><td>1g</td><td>21g</td></tr>
+                <tr><td>Idli (steamed)</td><td>39</td><td>2g</td><td>7g</td><td>0g</td></tr>
+                <tr><td>Chicken (breast)</td><td>165</td><td>31g</td><td>0g</td><td>4g</td></tr>
+                <tr><td>Banana</td><td>89</td><td>1g</td><td>23g</td><td>0g</td></tr>
+                <tr><td>Almonds</td><td>579</td><td>21g</td><td>22g</td><td>50g</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hydration Tracker -->
+    <div class="col-md-4">
+      <div class="card border-0 h-100">
+        <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
+          <h6 class="fw-semibold mb-0"><i class="bi bi-droplet me-2 text-info"></i>Hydration Tracker</h6>
+        </div>
+        <div class="card-body px-4 d-flex flex-column align-items-center">
+          <div class="water-progress-wrap my-3">
+            <svg viewBox="0 0 100 100" class="water-circle" width="120" height="120">
+              <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="8"/>
+              <circle cx="50" cy="50" r="45" fill="none" stroke="#38bdf8" stroke-width="8"
+                      stroke-dasharray="283" stroke-dashoffset="283"
+                      id="waterCircle" stroke-linecap="round"
+                      transform="rotate(-90 50 50)"/>
+            </svg>
+            <div class="water-text" id="waterText">0 / 8</div>
+          </div>
+          <p class="text-muted small mb-3">glasses of water (250ml each)</p>
+          <div class="d-flex gap-2 flex-wrap justify-content-center mb-3" id="waterGlasses">
+            <!-- Generated by JS -->
+          </div>
+          <button class="btn btn-outline-info btn-sm" id="resetWaterBtn">
+            <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Tips -->
+    <div class="col-md-4">
+      <div class="card border-0 h-100">
+        <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
+          <h6 class="fw-semibold mb-0"><i class="bi bi-lightbulb me-2 text-warning"></i>Daily Nutrition Tip</h6>
+        </div>
+        <div class="card-body px-4 d-flex flex-column">
+          <div class="tip-card flex-grow-1 rounded-3 p-3 mb-3" id="dailyTip">
+            Loading tip…
+          </div>
+          <button class="btn btn-outline-warning btn-sm" id="newTipBtn">
+            <i class="bi bi-shuffle me-1"></i>New Tip
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BMI Quick Check -->
+    <div class="col-md-4">
+      <div class="card border-0 h-100">
+        <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
+          <h6 class="fw-semibold mb-0"><i class="bi bi-speedometer2 me-2 text-success"></i>Quick BMI Check</h6>
+        </div>
+        <div class="card-body px-4">
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label small">Weight (kg)</label>
+              <input type="number" class="form-control form-control-sm" id="quickWeight" placeholder="70">
+            </div>
+            <div class="col-6">
+              <label class="form-label small">Height (cm)</label>
+              <input type="number" class="form-control form-control-sm" id="quickHeight" placeholder="170">
+            </div>
+          </div>
+          <button class="btn btn-success btn-sm w-100 mb-3" id="quickBMIBtn">
+            <i class="bi bi-calculator me-1"></i>Calculate BMI
+          </button>
+          <div id="quickBMIResult" class="d-none">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="fw-semibold fs-4" id="bmiVal">—</span>
+              <span class="badge" id="bmiCategory">—</span>
+            </div>
+            <div class="progress" style="height:8px">
+              <div class="progress-bar" id="bmiProgress" style="width:0%"></div>
+            </div>
+            <small class="text-muted mt-1 d-block" id="bmiRange">
+              Healthy range: 18.5 – 24.9
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /row -->
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
