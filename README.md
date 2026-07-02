@@ -228,14 +228,10 @@ Special thanks to **Mr. Vignesh Muthuveelan** for his valuable guidance and ment
 
 ## 👨‍💻 Author
 
-**Your Name**
+**Susmija Punnam
 
 LinkedIn:
-https://www.linkedin.com/in/your-profile
-
-GitHub:
-https://github.com/yourusername
-
+https://www.linkedin.com/in/susmija-punnam
 ---
 
 ## ⭐ If you found this project useful
