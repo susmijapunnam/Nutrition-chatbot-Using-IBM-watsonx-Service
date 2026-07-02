@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% block title %}BMI & TDEE — {{ agent_name }}{% endblock %}
+
+{% block content %}
+<div class="container-xl px-4" style="margin-top:90px;padding-bottom:60px">
+
+  <div class="page-header mb-4">
+    <h2 class="fw-bold mb-1"><i class="bi bi-bar-chart-line me-2 text-info"></i>BMI &amp; Calorie Calculator</h2>
+    <p class="text-muted mb-0">Calculate your Body Mass Index, daily calorie needs, and optimal macro targets.</p>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- ── Input Form ──────────────────────────────────────────────────── -->
+    <div class="col-lg-4">
+      <div class="card border-0 sticky-top" style="top:90px">
+        <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
+          <h6 class="fw-semibold mb-0"><i class="bi bi-person-badge me-2 text-primary"></i>Your Details</h6>
+        </div>
+        <div class="card-body px-4 pb-4">
+          <div class="mb-3">
+            <label class="form-label">Age</label>
+            <input type="number" class="form-control" id="bmiAge" min="1" max="120" placeholder="30">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Gender</label>
+            <div class="btn-group w-100">
+              <input type="radio" class="btn-check" name="bmiGender" id="genderMale" value="male" checked>
+              <label class="btn btn-outline-primary" for="genderMale"><i class="bi bi-gender-male me-1"></i>Male</label>
+              <input type="radio" class="btn-check" name="bmiGender" id="genderFemale" value="female">
+              <label class="btn btn-outline-primary" for="genderFemale"><i class="bi bi-gender-female me-1"></i>Female</label>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Weight</label>
+            <div class="input-group">
+              <input type="number" class="form-control" id="bmiWeight" step="0.1" placeholder="70">
+              <span class="input-group-text">kg</span>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Height</label>
+            <div class="input-group">
+              <input type="number" class="form-control" id="bmiHeight" placeholder="170">
+              <span class="input-group-text">cm</span>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Activity Level</label>
+            <select class="form-select" id="bmiActivity">
+              {% for key, label in activity_labels.items() %}
+              <option value="{{ key }}" {% if key == 'moderately_active' %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">Goal</label>
+            <select class="form-select" id="bmiGoal">
+              <option value="maintain" selected>Maintain Weight</option>
+              <option value="lose">Lose Weight</option>
+              <option value="gain">Gain Muscle</option>
+            </select>
+          </div>
+          <button class="btn btn-info text-white w-100 btn-lg fw-semibold" id="calcBMIBtn">
+            <i class="bi bi-calculator me-2"></i>Calculate
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Results ──────────────────────────────────────────────────────── -->
+    <div class="col-lg-8">
+
+      <!-- Placeholder -->
+      <div id="bmiPlaceholder" class="card border-0">
+        <div class="card-body text-center py-5">
+          <i class="bi bi-bar-chart-line" style="font-size:4rem;color:#d1d5db"></i>
+          <h5 class="text-muted fw-normal mt-3">Your results will appear here</h5>
+          <p class="text-muted small">Fill in your details and click "Calculate"</p>
+        </div>
+      </div>
+
+      <!-- Results Panel -->
+      <div id="bmiResults" class="d-none">
+
+        <!-- BMI Card -->
+        <div class="card border-0 mb-4 result-card">
+          <div class="card-body px-4 py-4">
+            <div class="row align-items-center g-4">
+              <div class="col-md-4 text-center">
+                <div class="bmi-dial mx-auto" id="bmiDial">
+                  <svg viewBox="0 0 200 120" width="200" height="120">
+                    <!-- gauge arc -->
+                    <path d="M20,100 A80,80 0 0,1 180,100" fill="none" stroke="#e5e7eb" stroke-width="16" stroke-linecap="round"/>
+                    <path d="M20,100 A80,80 0 0,1 180,100" fill="none" stroke="url(#bmiGradient)"
+                          stroke-width="16" stroke-linecap="round"
+                          stroke-dasharray="251" stroke-dashoffset="251" id="bmiGaugeArc"/>
+                    <defs>
+                      <linearGradient id="bmiGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%"   stop-color="#38bdf8"/>
+                        <stop offset="40%"  stop-color="#22c55e"/>
+                        <stop offset="70%"  stop-color="#f59e0b"/>
+                        <stop offset="100%" stop-color="#ef4444"/>
+                      </linearGradient>
+                    </defs>
+                    <text x="100" y="95" text-anchor="middle" class="bmi-gauge-text"
+                          id="bmiGaugeValue" font-size="28" font-weight="bold" fill="currentColor">—</text>
+                  </svg>
+                </div>
+                <div class="mt-1">
+                  <span class="badge fs-6 px-3 py-2" id="bmiCategoryBadge">—</span>
+                </div>
+              </div>
+              <div class="col-md-8">
+                <h5 class="fw-bold mb-1">Your BMI: <span id="bmiValueDisplay">—</span></h5>
+                <p class="text-muted mb-3" id="bmiAdviceText">—</p>
+                <div class="bmi-scale mb-2">
+                  <div class="bmi-scale-bar">
+                    <div class="bmi-marker" id="bmiMarker" style="left:0%"></div>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <small class="text-info">Underweight<br>&lt;18.5</small>
+                    <small class="text-success">Normal<br>18.5–24.9</small>
+                    <small class="text-warning">Overweight<br>25–29.9</small>
+                    <small class="text-danger">Obese<br>≥30</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TDEE & Macros -->
+        <div class="row g-3 mb-4">
+          <div class="col-sm-6 col-lg-3">
+            <div class="card border-0 text-center result-stat-card">
+              <div class="card-body py-4">
+                <div class="result-stat-icon text-danger mb-2"><i class="bi bi-fire"></i></div>
+                <div class="fs-3 fw-bold" id="bmrVal">—</div>
+                <small class="text-muted">BMR (kcal/day)</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="card border-0 text-center result-stat-card">
+              <div class="card-body py-4">
+                <div class="result-stat-icon text-warning mb-2"><i class="bi bi-lightning-charge"></i></div>
+                <div class="fs-3 fw-bold" id="tdeeVal">—</div>
+                <small class="text-muted">TDEE (kcal/day)</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="card border-0 text-center result-stat-card">
+              <div class="card-body py-4">
+                <div class="result-stat-icon text-success mb-2"><i class="bi bi-bullseye"></i></div>
+                <div class="fs-3 fw-bold" id="targetVal">—</div>
+                <small class="text-muted" id="goalLabel">Target (kcal/day)</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="card border-0 text-center result-stat-card">
+              <div class="card-body py-4">
+                <div class="result-stat-icon text-info mb-2"><i class="bi bi-droplet"></i></div>
+                <div class="fs-3 fw-bold" id="waterVal">—</div>
+                <small class="text-muted">Water (litres/day)</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Macro Breakdown -->
+        <div class="card border-0 mb-4">
+          <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
+            <h6 class="fw-semibold mb-0"><i class="bi bi-pie-chart me-2 text-primary"></i>Recommended Macros</h6>
+          </div>
+          <div class="card-body px-4">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="macro-progress-card">
+                  <div class="d-flex justify-content-between mb-1">
+                    <span class="fw-semibold text-primary">Protein</span>
+                    <span id="proteinGrams">— g</span>
+                  </div>
+                  <div class="progress" style="height:10px">
+                    <div class="progress-bar bg-primary" id="proteinBar" style="width:30%"></div>
+                  </div>
+                  <small class="text-muted">30% of calories</small>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="macro-progress-card">
+                  <div class="d-flex justify-content-between mb-1">
+                    <span class="fw-semibold text-warning">Carbs</span>
+                    <span id="carbsGrams">— g</span>
+                  </div>
+                  <div class="progress" style="height:10px">
+                    <div class="progress-bar bg-warning" id="carbsBar" style="width:45%"></div>
+                  </div>
+                  <small class="text-muted">45% of calories</small>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="macro-progress-card">
+                  <div class="d-flex justify-content-between mb-1">
+                    <span class="fw-semibold text-danger">Fat</span>
+                    <span id="fatGrams">— g</span>
+                  </div>
+                  <div class="progress" style="height:10px">
+                    <div class="progress-bar bg-danger" id="fatBar" style="width:25%"></div>
+                  </div>
+                  <small class="text-muted">25% of calories</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Personalised Advice -->
+        <div class="card border-0">
+          <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4
+                      d-flex justify-content-between align-items-center">
+            <h6 class="fw-semibold mb-0"><i class="bi bi-robot me-2 text-success"></i>AI Personalised Advice</h6>
+            <button class="btn btn-sm btn-success" id="getAIAdviceBtn">
+              <i class="bi bi-magic me-1"></i>Get Advice
+            </button>
+          </div>
+          <div class="card-body px-4">
+            <div id="aiAdviceArea" class="text-muted small">
+              Click "Get Advice" to receive personalised nutrition guidance from {{ agent_name }}.
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /bmiResults -->
+    </div><!-- /col -->
+  </div><!-- /row -->
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/bmi.js') }}"></script>
+{% endblock %}
