@@ -220,7 +220,7 @@ Special thanks to **Mr. Vignesh Muthuveelan** for his valuable guidance and ment
 
 ## 👨‍💻 Author
 
-**Susmija Punnam
+## Susmija Punnam
 
 LinkedIn:
 https://www.linkedin.com/in/susmija-punnam
